@@ -5,6 +5,38 @@ import random
 import requests
 from bs4 import BeautifulSoup
 import pymsgbox as pg
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+
+gmail_address = pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
+password = pg.password('wpisz hasło do swojego konta google', mask='*')
+
+def send_email(Linki):
+    
+    subject = f'BOT ALERT - PRODUKT DOSTĘPNY! - link: {Linki}'
+
+    msg = MIMEMultipart()
+    msg['From'] = gmail_address
+    msg['To'] = gmail_address
+    msg['Subject'] = subject
+
+    body = f'link do produktu: {Linki}'
+    msg.attach(MIMEText(body, 'plain'))
+
+    part = MIMEBase('application', 'octet-stream')
+
+    text = msg.as_string()
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(gmail_address, password)
+
+
+    server.sendmail(gmail_address, gmail_address, text)
+    server.quit()
+
 
 def pobieranie():
     
@@ -26,9 +58,8 @@ def pobieranie():
                 except:
                     print(f"Produkt jest dostępny!! - {Linki}")
                     pg.alert(f"PRODUKT JEST DOSTĘPNY! - {Linki}")
-                    sys.exit()
-            
-            
+                    send_email(Linki)
+                    sys.exit()           
             time.sleep(1)
 
 
@@ -42,8 +73,6 @@ root.title('pokewave.eu - order status')
 root.geometry('400x250')
 
 tasks = []
-
-
 
 # Create functions
 
