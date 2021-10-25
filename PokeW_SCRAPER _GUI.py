@@ -1,3 +1,4 @@
+import email
 import time
 import sys
 import tkinter
@@ -13,6 +14,10 @@ from email import encoders
 
 gmail_address = pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
 password = pg.password('wpisz hasło do swojego konta google', mask='*')
+
+if gmail_address == "" or password == "":
+    pg.alert('UZUPEŁNIJ DANE I URUCHOM PONOWNIE PROGRAM', 'BRAK DANYCH')
+    sys.exit()
 
 def send_email(Linki):
     
