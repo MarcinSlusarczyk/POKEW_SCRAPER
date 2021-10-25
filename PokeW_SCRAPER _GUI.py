@@ -1,4 +1,3 @@
-import email
 import time
 import sys
 import tkinter
@@ -45,15 +44,19 @@ def send_email(Linki):
 
 def pobieranie():
     
+    counter_max = 0
     
     while True:
+        counter = 0
         for Linki in list(tasks):
+            
+                
             page = requests.get(Linki)
             
             soup = BeautifulSoup(page.content, "html.parser")
 
             koszyk = soup.find_all('div', id='PrzyciskKupowania')
-
+            
             for ele in koszyk:
                 try:
                     ele['style']
@@ -61,11 +64,12 @@ def pobieranie():
                     if 'display:none' in ele['style']:
                         print (f'Produkt niedostępny - {Linki}')
                 except:
-                    print(f"Produkt jest dostępny!! - {Linki}")
-                    pg.alert(f"PRODUKT JEST DOSTĘPNY! - {Linki}")
-                    send_email(Linki)
-                    sys.exit()           
-            time.sleep(1)
+                    counter += 1
+                    if counter > counter_max:
+                        print(f"Produkt jest dostępny!! - {Linki}")
+                        send_email(Linki)
+        counter_max = counter                  
+        time.sleep(5)
 
 
 
