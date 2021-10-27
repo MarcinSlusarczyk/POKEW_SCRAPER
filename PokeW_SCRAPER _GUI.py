@@ -1,4 +1,5 @@
 import time
+import datetime
 import sys
 import tkinter
 import random
@@ -13,6 +14,9 @@ from email import encoders
 
 gmail_address = pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
 password = pg.password('wpisz hasło do swojego konta google', mask='*')
+
+begin_time = datetime.datetime.now()
+
 
 if gmail_address == "" or password == "":
     pg.alert('UZUPEŁNIJ DANE I URUCHOM PONOWNIE PROGRAM', 'BRAK DANYCH')
@@ -50,27 +54,37 @@ def pobieranie():
         counter = 0
         for Linki in list(tasks):
             
+            try:    
+                page = requests.get(Linki)
                 
-            page = requests.get(Linki)
-            
-            soup = BeautifulSoup(page.content, "html.parser")
+                soup = BeautifulSoup(page.content, "html.parser")
 
-            koszyk = soup.find_all('div', id='PrzyciskKupowania')
-            
-            for ele in koszyk:
-                try:
-                    ele['style']
+                koszyk = soup.find_all('div', id='PrzyciskKupowania')
+                
+                for ele in koszyk:
+                    try:
+                        ele['style']
 
-                    if 'display:none' in ele['style']:
-                        print (f'Produkt niedostępny - {Linki}')
-                except:
-                    counter += 1
-                    if counter > counter_max:
-                        print(f"Produkt jest dostępny!! - {Linki}")
-                        send_email(Linki)
+                        if 'display:none' in ele['style']:
+                            print (f'Produkt niedostępny - {Linki}')
+                    except:
+                        counter += 1
+                        if counter > counter_max:
+                            print(f"Produkt jest dostępny!! - {Linki}")
+                            send_email(Linki)
+          
+            except requests.exceptions.HTTPError as errh:
+                print ("Http Error:",errh)
+            except requests.exceptions.ConnectionError as errc:
+                print ("Error Connecting:",errc)
+            except requests.exceptions.Timeout as errt:
+                print ("Timeout Error:",errt)
+            except requests.exceptions.RequestException as err:
+                print ("OOps: Something Else",err)
         counter_max = counter                  
         time.sleep(5)
-
+        print(f'program pracuje już: {datetime.datetime.now()-begin_time}')        
+        
 
 
 root = tkinter.Tk()
