@@ -63,7 +63,7 @@ def send_email_alert():
     msg['To'] = gmail_address
     msg['Subject'] = subject
 
-    body = f'Wiadomość wygenerowana auomatycznie...'
+    body = f'Wiadomość wygenerowana automatycznie...'
     msg.attach(MIMEText(body, 'plain'))
 
     part = MIMEBase('application', 'octet-stream')
