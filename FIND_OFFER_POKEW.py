@@ -23,6 +23,13 @@ if gmail_address == "" and password == "":
     sys.exit()
 
 begin_time = datetime.datetime.now()
+product_name = ""
+counter_loop = 0
+counter_max = 0
+tablica = []
+tablica_start = []
+product_table = []
+link_table = []
 
 def send_email():
 
@@ -47,12 +54,33 @@ def send_email():
     server.sendmail(gmail_address, gmail_address, text)
     server.quit()
 
+def send_email_alert():
+    
+    subject = f'WSZYSTKO DZIAŁA! (BOT ALERT)'
+    
+    msg = MIMEMultipart()
+    msg['From'] = gmail_address
+    msg['To'] = gmail_address
+    msg['Subject'] = subject
+
+    body = f'Wiadomość wygenerowana auomatycznie...'
+    msg.attach(MIMEText(body, 'plain'))
+
+    part = MIMEBase('application', 'octet-stream')
+
+    text = msg.as_string()
+
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(gmail_address, password)
+    server.sendmail(gmail_address, gmail_address, text)
+    server.quit()
 
 def petla():
     
     counter_loop = 0
     counter_max = 0
-    sale_max = 0
     tablica = []
     tablica_start = []
     product_table = []
@@ -62,6 +90,14 @@ def petla():
     status_loop = True
 
     while status_loop:
+        godzina = time.localtime()
+        aktualna = time.strftime("%H:%M:%S", godzina)
+        if aktualna > '08:00:00' and aktualna < '08:00:10':
+            send_email_alert()
+            time.sleep(11)
+        if aktualna > '22:00:00' and aktualna < '22:00:10':            
+            send_email_alert()
+            time.sleep(11)
         
         counter_loop +=1
         counter = 0
@@ -147,7 +183,7 @@ def petla():
                             
         counter_max = counter
         czas = datetime.datetime.now() - begin_time
-        print(f'program pracuje już: {czas} ---- łącznie wysłano: {counter_max} powiadomień')
+        print(f'program pracuje już: {czas} ---- łącznie wysłano: {counter_max} powiadomień -- aktualna godzina: {aktualna}')
         tablica.clear()
         product_table.clear()
         link_table.clear()
