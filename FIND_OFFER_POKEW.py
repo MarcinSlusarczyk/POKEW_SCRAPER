@@ -1,4 +1,5 @@
 import time
+import os
 import sys
 import datetime
 import tkinter
@@ -11,8 +12,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-import socket
-socket.getaddrinfo('localhost', 8080)
+
 
 gmail_address = pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
 password = pg.password('wpisz hasło do swojego konta google', mask='*')
@@ -47,91 +47,109 @@ def send_email():
     server.sendmail(gmail_address, gmail_address, text)
     server.quit()
 
-counter_loop = 0
-counter_max = 0
-sale_max = 0
-tablica = []
-tablica_start = []
-product_table = []
-link_table = []
 
-while True:
-    counter_loop +=1
-    counter = 0
-    main_site = 'https://pokewave.eu/produkty.html'    
-    #page = requests.get(main_site)
-    #soup = BeautifulSoup(page.content, "html.parser")
-    #index_page = soup.find(class_='IndexStron')
-    page_count = 10 #index_page.text[16].replace(' ', '')
+def petla():
     
-    seq = 1
+    counter_loop = 0
+    counter_max = 0
+    sale_max = 0
+    tablica = []
+    tablica_start = []
+    product_table = []
+    link_table = []
 
-    for seq in range(int(page_count)):
+
+    status_loop = True
+
+    while status_loop:
         
-        try:
+        counter_loop +=1
+        counter = 0
+        main_site = 'https://pokewave.eu/produkty.html'    
+        #page = requests.get(main_site)
+        #soup = BeautifulSoup(page.content, "html.parser")
+        #index_page = soup.find(class_='IndexStron')
+        page_count = 10 #index_page.text[16].replace(' ', '')
+        
+        seq = 1
 
-            page = (f'{main_site}/s={str(int(seq+1))}')
-            page_request = requests.get(page)
-            soup = BeautifulSoup(page_request.content, "html.parser")
-
+        for seq in range(int(page_count)):
             
-            for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
+            try:
+
+                page = (f'{main_site}/s={str(int(seq+1))}')
+                page_request = requests.get(page)
+                soup = BeautifulSoup(page_request.content, "html.parser")
+
                 
-                product_name = order.find('h3').text
-                product_link = order.find('a')['href']
-                product_status = order.find(class_='ListaOpisowa').text
-                product_cart = order.find(class_='DoKoszyka')
-                product_previous_price = order.find('em', class_='CenaPoprzednia')
-                product_price = order.find('span', class_='CenaPromocyjna')
-
-                if product_status.find('Dostępny') > 0 and product_previous_price != None and product_cart != None:
-                    try:
-                        product_previous_price_2 = int(float(product_price.text.replace('zł', '').replace(',', '.').split()[0]))
-                        product_price_2 = int(float(product_price.text.replace('zł', '').replace(',', '.').split()[1]))
-                        sale = product_previous_price_2-product_price_2
-                        product_price_update = product_price_2
-                        
-                        tablica.append(product_price_2)
-                        product_table.append(product_name)
-                        link_table.append(product_link)
-
-                        if counter_loop == 1:
-                            tablica_start.append(product_price_2)                                            
+                for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
                     
-                    except:
-                        pass
-                
-        except requests.exceptions.HTTPError as errh:
-            print ("Http Error:",errh)
-            counter = counter_max
-            print(counter)
-        except requests.exceptions.ConnectionError as errc:
-            print ("Error Connecting:",errc)
-            counter = counter_max
-            print(counter)
-        except requests.exceptions.Timeout as errt:
-            print ("Timeout Error:",errt)
-            counter = counter_max
-            print(counter)
-        except requests.exceptions.RequestException as err:
-            print ("OOps: Something Else",err)
-            counter = counter_max
-            print(counter)       
-    
-    counter_max = counter
-    
-    count_tablica = len(tablica)
-    count_tablica_start = len(tablica_start)    
-    
-    for wartosc in range(count_tablica):
-        if tablica[wartosc] > tablica_start[wartosc]:
-            counter += 1            
-            if counter > counter_max:
-                send_email()
+                    product_name = order.find('h3').text
+                    product_link = order.find('a')['href']
+                    product_status = order.find(class_='ListaOpisowa').text
+                    product_cart = order.find(class_='DoKoszyka')
+                    product_previous_price = order.find('em', class_='CenaPoprzednia')
+                    product_price = order.find('span', class_='CenaPromocyjna')
 
-    counter_max = counter
-    czas = datetime.datetime.now() - begin_time
-    print(f'program pracuje już: {czas} ---- łącznie wysłano: {counter_max} powiadomień')
-    tablica.clear()
-    product_table.clear()
-    link_table.clear()
+                    if product_status.find('Dostępny') > 0 and product_previous_price != None and product_cart != None:
+                        try:
+                            product_previous_price_2 = int(float(product_price.text.replace('zł', '').replace(',', '.').split()[0]))
+                            product_price_2 = int(float(product_price.text.replace('zł', '').replace(',', '.').split()[1]))
+                            sale = product_previous_price_2-product_price_2
+                            product_price_update = product_price_2
+                            
+                            tablica.append(product_price_2)
+                            product_table.append(product_name)
+                            link_table.append(product_link)
+                            
+                            if counter_loop == 1:
+                                tablica_start.append(product_price_2)                                            
+                        
+                        except:
+                            pass
+                    
+            except requests.exceptions.HTTPError as errh:
+                print ("Http Error:",errh)
+                counter = counter_max
+                print(counter)
+            except requests.exceptions.ConnectionError as errc:
+                print ("Error Connecting:",errc)
+                counter = counter_max
+                print(counter)
+            except requests.exceptions.Timeout as errt:
+                print ("Timeout Error:",errt)
+                counter = counter_max
+                print(counter)
+            except requests.exceptions.RequestException as err:
+                print ("OOps: Something Else",err)
+                counter = counter_max
+                print(counter)       
+        
+        counter_max = counter
+
+        
+        count_tablica = len(tablica)
+        count_tablica_start = len(tablica_start)    
+        
+        for wartosc in range(count_tablica):
+            try:
+                
+                if tablica[wartosc] > tablica_start[wartosc]:
+                    counter += 1            
+                    if counter > counter_max:
+                        send_email()
+            except IndexError:
+                print("Doszedł nowy produkt! -- restart programu")
+                status_loop = False
+                petla()
+                # os.execl(sys.executable, sys.executable, *sys.argv)
+            
+                            
+        counter_max = counter
+        czas = datetime.datetime.now() - begin_time
+        print(f'program pracuje już: {czas} ---- łącznie wysłano: {counter_max} powiadomień')
+        tablica.clear()
+        product_table.clear()
+        link_table.clear()
+
+petla()
