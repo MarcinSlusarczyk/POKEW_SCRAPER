@@ -26,6 +26,7 @@ begin_time = datetime.datetime.now()
 product_name = ""
 counter_loop = 0
 counter_max = 0
+wartosc = 0
 tablica = []
 tablica_start = []
 product_table = []
@@ -63,7 +64,7 @@ def send_email_alert():
     msg['To'] = gmail_address
     msg['Subject'] = subject
 
-    body = f'Wiadomość wygenerowana automatycznie...'
+    body = f'Wiadomość wygenerowana auomatycznie...'
     msg.attach(MIMEText(body, 'plain'))
 
     part = MIMEBase('application', 'octet-stream')
@@ -147,25 +148,28 @@ def petla():
             except requests.exceptions.HTTPError as errh:
                 print ("Http Error:",errh)
                 counter = counter_max
-                print(counter)
+                time.sleep(5)
             except requests.exceptions.ConnectionError as errc:
                 print ("Error Connecting:",errc)
                 counter = counter_max
-                print(counter)
+                time.sleep(5)
+                
             except requests.exceptions.Timeout as errt:
                 print ("Timeout Error:",errt)
                 counter = counter_max
-                print(counter)
+                time.sleep(5)
+                
             except requests.exceptions.RequestException as err:
                 print ("OOps: Something Else",err)
                 counter = counter_max
-                print(counter)       
+                time.sleep(5)
+                       
         
         counter_max = counter
 
         
         count_tablica = len(tablica)
-        count_tablica_start = len(tablica_start)    
+         
         
         for wartosc in range(count_tablica):
             try:
@@ -175,7 +179,7 @@ def petla():
                     if counter > counter_max:
                         send_email()
             except IndexError:
-                print("Doszedł nowy produkt! -- restart programu")
+                print("restart programu")
                 status_loop = False
                 petla()
                 # os.execl(sys.executable, sys.executable, *sys.argv)
@@ -183,7 +187,7 @@ def petla():
                             
         counter_max = counter
         czas = datetime.datetime.now() - begin_time
-        print(f'program pracuje już: {czas} ---- łącznie wysłano: {counter_max} powiadomień -- aktualna godzina: {aktualna}')
+        print(f'działa już: {czas} -- wysłano: {counter_max} powiadomień -- ilość produktów: {count_tablica} -- godzina: {aktualna}')
         tablica.clear()
         product_table.clear()
         link_table.clear()
