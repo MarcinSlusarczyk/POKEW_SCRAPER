@@ -48,12 +48,46 @@ def send_email(Linki):
     server.quit()
 
 
+def send_email_alert():
+    
+    subject = f'PROGRAM 1 - WSZYSTKO DZIAŁA! (BOT ALERT)'
+    
+    msg = MIMEMultipart()
+    msg['From'] = gmail_address
+    msg['To'] = gmail_address
+    msg['Subject'] = subject
+
+    body = f'Wiadomość wygenerowana automatycznie...'
+    msg.attach(MIMEText(body, 'plain'))
+
+    part = MIMEBase('application', 'octet-stream')
+
+    text = msg.as_string()
+
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(gmail_address, password)
+    server.sendmail(gmail_address, gmail_address, text)
+    server.quit()
+
+
 
 def pobieranie():
     
+        
     counter_max = 0
     
     while True:
+        godzina = time.localtime()
+        aktualna = time.strftime("%H:%M:%S", godzina)
+        if aktualna > '08:00:00' and aktualna < '08:00:10':
+            send_email_alert()
+            time.sleep(11)
+        if aktualna > '20:00:00' and aktualna < '20:00:10':            
+            send_email_alert()
+            time.sleep(11)
+        
         counter = 0
         for Linki in list(tasks):
             
@@ -86,7 +120,7 @@ def pobieranie():
                 print ("OOps: Something Else",err)
         counter_max = counter                  
         time.sleep(5)
-        print(f'program pracuje już: {datetime.datetime.now()-begin_time}')       
+        print(f'program 1 pracuje: {datetime.datetime.now()-begin_time}-- godzina {aktualna}')       
 
 
 
