@@ -14,6 +14,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 
 
+
 gmail_address = pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
 password = pg.password('wpisz hasło do swojego konta google', mask='*')
 
@@ -103,10 +104,14 @@ def petla():
         counter_loop +=1
         counter = 0
         main_site = 'https://pokewave.eu/produkty.html'    
-        #page = requests.get(main_site)
-        #soup = BeautifulSoup(page.content, "html.parser")
-        #index_page = soup.find(class_='IndexStron')
-        page_count = 10 #index_page.text[16].replace(' ', '')
+        
+        try:
+            page = requests.get(main_site)
+            soup = BeautifulSoup(page.content, "html.parser")
+            index_page = soup.find(class_='IndexStron')
+            page_count = index_page.text[16].replace(' ', '')
+        except:
+            page_count = 6
         
         seq = 1
 
@@ -120,30 +125,39 @@ def petla():
 
                 
                 for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
-                    
-                    product_name = order.find('h3').text
-                    product_link = order.find('a')['href']
-                    product_status = order.find(class_='ListaOpisowa').text
-                    product_cart = order.find(class_='DoKoszyka')
-                    product_previous_price = order.find('em', class_='CenaPoprzednia')
-                    product_price = order.find('span', class_='CenaPromocyjna')
-
-                    if product_status.find('Dostępny') > 0 and product_previous_price != None and product_cart != None:
-                        try:
-                            product_previous_price_2 = int(float(product_price.text.replace('zł', '').replace(',', '.').split()[0]))
-                            product_price_2 = int(float(product_price.text.replace('zł', '').replace(',', '.').split()[1]))
-                            sale = product_previous_price_2-product_price_2
-                            product_price_update = product_price_2
+                    try:
+                        product_name = order.find('h3').text
+                        product_link = order.find('a')['href']
+                        product_status = order.find(class_='ListaOpisowa').text
+                        product_cart = order.find(class_='DoKoszyka')
+                        
+                        try:                        
+                            product_price = order.find('span', class_='CenaPromocyjna').text                            
+                        except:
+                            product_price = 0
+                                            
+                        try:                       
+                            price = order.find(class_='Cena').text
+                        except:
+                            price = 0
                             
+                        if product_status.find('Dostępny') > 0  and product_cart != None:
+                            
+                            if price == 0:                               
+                                product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
+                            else:
+                                product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))
+                                
                             tablica.append(product_price_2)
                             product_table.append(product_name)
                             link_table.append(product_link)
                             
+                            
                             if counter_loop == 1:
                                 tablica_start.append(product_price_2)                                            
                         
-                        except:
-                            pass
+                    except:                        
+                        pass
                     
             except requests.exceptions.HTTPError as errh:
                 print ("Http Error:",errh)
@@ -173,7 +187,7 @@ def petla():
         
         for wartosc in range(count_tablica):
             try:
-                
+                # print(f'{tablica[wartosc]}, {tablica_start[wartosc]}')
                 if tablica[wartosc] > tablica_start[wartosc]:
                     counter += 1            
                     if counter > counter_max:
@@ -188,6 +202,7 @@ def petla():
         counter_max = counter
         czas = datetime.datetime.now() - begin_time
         print(f'działa już: {czas} -- wysłano: {counter_max} powiadomień -- ilość produktów: {count_tablica} -- godzina: {aktualna}')
+        time.sleep(1)
         tablica.clear()
         product_table.clear()
         link_table.clear()
