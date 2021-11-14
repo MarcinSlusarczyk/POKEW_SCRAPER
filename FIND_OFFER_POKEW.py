@@ -96,7 +96,7 @@ def petla():
         if aktualna > '08:00:00' and aktualna < '08:00:10':
             send_email_alert()
             time.sleep(11)
-        if aktualna > '22:00:00' and aktualna < '22:00:10':            
+        if aktualna > '20:00:00' and aktualna < '20:00:10':            
             send_email_alert()
             time.sleep(11)
         
