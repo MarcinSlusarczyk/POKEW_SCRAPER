@@ -57,7 +57,7 @@ def send_email():
 
 def send_email_alert():
     
-    subject = f'WSZYSTKO DZIAŁA! (BOT ALERT)'
+    subject = f'PROGRAM 2 - WSZYSTKO DZIAŁA! (BOT ALERT)'
     
     msg = MIMEMultipart()
     msg['From'] = gmail_address
