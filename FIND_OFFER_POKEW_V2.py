@@ -36,16 +36,16 @@ link_table = []
 product_table_start = []
 link_table_start = []
 
-def send_email():
+def send_email(current_price, previous_price, current_product, current_link):
 
-    subject = f'BOT ALERT (PokeWave.eu) - {product_name}'
+    subject = f'BOT ALERT (PokeWave.eu) - {current_product}'
     
     msg = MIMEMultipart()
     msg['From'] = gmail_address
     msg['To'] = gmail_address
     msg['Subject'] = subject
 
-    body = f'Cena spadła z {tablica_start[wartosc]} zł na {tablica[wartosc]} !!!! -- link do produktu: {link_table[wartosc]}'
+    body = f'Cena spadła z {previous_price} zł na {current_price} !!!! -- link do produktu: {current_link}'
     msg.attach(MIMEText(body, 'plain'))
 
     part = MIMEBase('application', 'octet-stream')
@@ -59,7 +59,7 @@ def send_email():
     server.sendmail(gmail_address, gmail_address, text)
     server.quit()
 
-def send_email_alert():
+def send_email_alert(count_tablica):
     
     subject = f'PROGRAM 2 - WSZYSTKO DZIAŁA! (BOT ALERT)'
     
@@ -68,7 +68,7 @@ def send_email_alert():
     msg['To'] = gmail_address
     msg['Subject'] = subject
 
-    body = f'Wiadomość wygenerowana automatycznie...'
+    body = f'Dostępnych produktów na stronie jest: {count_tablica}'
     msg.attach(MIMEText(body, 'plain'))
 
     part = MIMEBase('application', 'octet-stream')
@@ -83,7 +83,7 @@ def send_email_alert():
     server.quit()
     
 
-def send_email_alert_new():
+def send_email_alert_new(link):
     
     subject = f'POJAWIŁ SIĘ NOWY PRODUKT! (BOT ALERT)'
     
@@ -122,10 +122,10 @@ def petla():
         godzina = time.localtime()
         aktualna = time.strftime("%H:%M:%S", godzina)
         if aktualna > '08:00:00' and aktualna < '08:00:10':
-            send_email_alert()
+            send_email_alert(count_tablica)
             time.sleep(11)
         if aktualna > '20:00:00' and aktualna < '20:00:10':            
-            send_email_alert()
+            send_email_alert(count_tablica)
             time.sleep(11)
         
         counter_loop +=1
@@ -218,18 +218,22 @@ def petla():
             for link in link_table:
                 if link not in link_table_start:
                     print(f"wysyłam powiadomienie dla nowego produktu, link: {link}")
-                    send_email_alert_new()
+                    send_email_alert_new(link)
                     status_loop = False
                     petla()
                     
         
         for wartosc in range(count_tablica_start):
             try:
-                # print(f'{tablica[wartosc]}, {tablica_start[wartosc]}')
-                if tablica[wartosc] > tablica_start[wartosc]:
+                current_price = tablica[wartosc]
+                current_product = product_table[wartosc]
+                current_link = link_table[wartosc]
+                previous_price = tablica_start[wartosc]
+
+                if current_price > previous_price:
                     counter += 1            
                     if counter > counter_max:
-                        send_email()
+                        send_email(current_price, previous_price, current_product, current_link)
             except IndexError:
                 print("restart programu")
                 status_loop = False
