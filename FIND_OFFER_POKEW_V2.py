@@ -92,7 +92,7 @@ def send_email_alert_new():
     msg['To'] = gmail_address
     msg['Subject'] = subject
 
-    body = f'NOWY PRODUKT! - {product_table[zmiana]} -- link: {product_link[zmiana]}'
+    body = f'link no nowego produktu: {link}'
     msg.attach(MIMEText(body, 'plain'))
 
     part = MIMEBase('application', 'octet-stream')
@@ -174,6 +174,7 @@ def petla():
                                 product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
                             else:
                                 product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))
+                            
                                 
                             tablica.append(product_price_2)
                             product_table.append(product_name)
@@ -214,14 +215,15 @@ def petla():
         count_tablica_start = len(tablica_start)
          
         if count_tablica > count_tablica_start:
-            for zmiana in range(count_tablica_start):
-                if product_table[zmiana] != product_table_start[zmiana]:
-                    print(product_table[zmiana])
+            for link in link_table:
+                if link not in link_table_start:
+                    print(f"wysyłam powiadomienie dla nowego produktu, link: {link}")
                     send_email_alert_new()
-                    break
+                    status_loop = False
+                    petla()
                     
         
-        for wartosc in range(count_tablica):
+        for wartosc in range(count_tablica_start):
             try:
                 # print(f'{tablica[wartosc]}, {tablica_start[wartosc]}')
                 if tablica[wartosc] > tablica_start[wartosc]:
