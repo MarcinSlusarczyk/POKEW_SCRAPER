@@ -117,8 +117,10 @@ def petla():
     product_table_start = []
     link_table_start = []
     status_loop = True
-
+  
+    
     while status_loop:
+        
         godzina = time.localtime()
         aktualna = time.strftime("%H:%M:%S", godzina)
         if aktualna > '08:00:00' and aktualna < '08:00:10':
@@ -152,60 +154,65 @@ def petla():
 
                 
                 for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
-                    try:
-                        product_name = order.find('h3').text
-                        product_link = order.find('a')['href']
-                        product_status = order.find(class_='ListaOpisowa').text
-                        product_cart = order.find(class_='DoKoszyka')
-                        
-                        try:                        
-                            product_price = order.find('span', class_='CenaPromocyjna').text                            
-                        except:
-                            product_price = 0
-                                            
-                        try:                       
-                            price = order.find(class_='Cena').text
-                        except:
-                            price = 0
-                            
-                        if product_status.find('Dostępny') > 0  and product_cart != None:
-                            
-                            if price == 0:                               
-                                product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
-                            else:
-                                product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))
-                            
-                                
-                            tablica.append(product_price_2)
-                            product_table.append(product_name)
-                            link_table.append(product_link)
-                            
-                            
-                            if counter_loop == 1:
-                                tablica_start.append(product_price_2)                                            
-                                product_table_start.append(product_name)
-                                link_table_start.append(product_link)
-                    except:                        
-                        pass
                     
-            except requests.exceptions.HTTPError as errh:
-                print ("Http Error:",errh)
-                counter = counter_max
+                    product_name = order.find('h3').text
+                    product_link = order.find('a')['href']
+                    product_status = order.find(class_='ListaOpisowa').text
+                    product_cart = order.find(class_='DoKoszyka')
+                    
+                    try:                        
+                        product_price = order.find('span', class_='CenaPromocyjna').text                            
+                    except:
+                        product_price = 0
+                                        
+                    try:                       
+                        price = order.find(class_='Cena').text
+                    except:
+                        price = 0
+                        
+                    if product_status.find('Dostępny') > 0  and product_cart != None:
+                        
+                        if price == 0:                               
+                            product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
+                        else:
+                            product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))
+                        
+                        
+                            
+                        tablica.append(product_price_2)
+                        product_table.append(product_name)
+                        link_table.append(product_link)
+                        
+                        
+                        
+                        if counter_loop == 1:
+                            tablica_start.append(product_price_2)                                            
+                            product_table_start.append(product_name)
+                            link_table_start.append(product_link)
+                    
+            except:
+                print('Wystąpił problem z połączeniem...')
                 time.sleep(5)
-            except requests.exceptions.ConnectionError as errc:
-                print ("Error Connecting:",errc)
-                counter = counter_max
-                time.sleep(5)
+                status_loop = False
+                petla()
+            # except requests.exceptions.HTTPError as errh:
+            #     print ("Http Error:",errh)
+            #     counter = counter_max
+            #     time.sleep(5)
+            # except requests.exceptions.ConnectionError as errc:
+            #     print ("Error Connecting:",errc)
+            #     counter = counter_max
+            #     time.sleep(5)
                 
-            except requests.exceptions.Timeout as errt:
-                print ("Timeout Error:",errt)
-                counter = counter_max
-                time.sleep(5)
+            # except requests.exceptions.Timeout as errt:
+            #     print ("Timeout Error:",errt)
+            #     counter = counter_max
+            #     time.sleep(5)
                 
-            except requests.exceptions.RequestException as err:
-                print ("OOps: Something Else",err)
-                counter = counter_max
-                time.sleep(5)
+            # except requests.exceptions.RequestException as err:
+            #     print ("OOps: Something Else",err)
+            #     counter = counter_max
+            #     time.sleep(5)
                        
         
         counter_max = counter
@@ -221,9 +228,15 @@ def petla():
                     send_email_alert_new(link)
                     status_loop = False
                     petla()
-                    
+        
+        if count_tablica < count_tablica_start:            
+            print('Ilość dostępnych produktów SPADŁA! - aktualizacja danych...')
+            status_loop = False
+            petla()
+                   
         
         for wartosc in range(count_tablica_start):
+    
             try:
                 current_price = tablica[wartosc]
                 current_product = product_table[wartosc]
@@ -235,15 +248,16 @@ def petla():
                     if counter > counter_max:
                         send_email(current_price, previous_price, current_product, current_link)
             except IndexError:
-                print("restart programu")
-                status_loop = False
-                petla()
+                pass
+                # print("restart programu")
+                # status_loop = False
+                # petla()
                 # os.execl(sys.executable, sys.executable, *sys.argv)
             
                             
         counter_max = counter
         czas = datetime.datetime.now() - begin_time
-        print(f'działa już: {czas} -- wysłano: {counter_max} powiadomień -- ilość produktów: {count_tablica} -- godzina: {aktualna}')
+        print(f'działa już: {czas} -- ilość dostępnych produktów: {count_tablica} --- godzina: {aktualna}')
         time.sleep(1)
         tablica.clear()
         product_table.clear()
