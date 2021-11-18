@@ -123,12 +123,12 @@ def petla():
         
         godzina = time.localtime()
         aktualna = time.strftime("%H:%M:%S", godzina)
-        if aktualna > '08:00:00' and aktualna < '08:00:10':
+        if aktualna > '08:00:00' and aktualna < '08:00:30':
             send_email_alert(count_tablica)
-            time.sleep(11)
-        if aktualna > '20:00:00' and aktualna < '20:00:10':            
+            time.sleep(31)
+        if aktualna > '20:00:00' and aktualna < '20:00:30':            
             send_email_alert(count_tablica)
-            time.sleep(11)
+            time.sleep(31)
         
         counter_loop +=1
         counter = 0
@@ -263,7 +263,7 @@ def petla():
         counter_max = counter
         czas = datetime.datetime.now() - begin_time
         print(f'działa już: {czas} -- ilość dostępnych produktów: {count_tablica} --- godzina: {aktualna}')
-        time.sleep(1)
+        time.sleep(6)
         tablica.clear()
         product_table.clear()
         link_table.clear()
