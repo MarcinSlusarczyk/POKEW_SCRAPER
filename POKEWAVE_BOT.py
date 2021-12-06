@@ -13,8 +13,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
-
-
 gmail_address = pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
 password = pg.password('wpisz hasło do swojego konta google', mask='*')
 
@@ -37,75 +35,80 @@ product_table_start = []
 link_table_start = []
 
 def send_email(current_price, previous_price, current_product, current_link):
+    try:
+        subject = f'BOT ALERT (PokeWave.eu) - {current_product}'
+        
+        msg = MIMEMultipart()
+        msg['From'] = gmail_address
+        msg['To'] = gmail_address
+        msg['Subject'] = subject
 
-    subject = f'BOT ALERT (PokeWave.eu) - {current_product}'
-    
-    msg = MIMEMultipart()
-    msg['From'] = gmail_address
-    msg['To'] = gmail_address
-    msg['Subject'] = subject
+        body = f'Cena spadła z {previous_price} zł na {current_price} !!!! -- link do produktu: {current_link}'
+        msg.attach(MIMEText(body, 'plain'))
 
-    body = f'Cena spadła z {previous_price} zł na {current_price} !!!! -- link do produktu: {current_link}'
-    msg.attach(MIMEText(body, 'plain'))
+        part = MIMEBase('application', 'octet-stream')
 
-    part = MIMEBase('application', 'octet-stream')
-
-    text = msg.as_string()
+        text = msg.as_string()
 
 
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(gmail_address, password)
-    server.sendmail(gmail_address, gmail_address, text)
-    server.quit()
-
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(gmail_address, password)
+        server.sendmail(gmail_address, gmail_address, text)
+        server.quit()
+    except:
+        print('błąd wysyłania')
+        
 def send_email_alert(count_tablica):
-    
-    subject = f'PROGRAM 2 - WSZYSTKO DZIAŁA! (BOT ALERT)'
-    
-    msg = MIMEMultipart()
-    msg['From'] = gmail_address
-    msg['To'] = gmail_address
-    msg['Subject'] = subject
+    try:
+        subject = f'PROGRAM 2 - WSZYSTKO DZIAŁA! (BOT ALERT)'
+        
+        msg = MIMEMultipart()
+        msg['From'] = gmail_address
+        msg['To'] = gmail_address
+        msg['Subject'] = subject
 
-    body = f'Dostępnych produktów na stronie jest: {count_tablica}'
-    msg.attach(MIMEText(body, 'plain'))
+        body = f'Dostępnych produktów na stronie jest: {count_tablica}'
+        msg.attach(MIMEText(body, 'plain'))
 
-    part = MIMEBase('application', 'octet-stream')
+        part = MIMEBase('application', 'octet-stream')
 
-    text = msg.as_string()
+        text = msg.as_string()
 
 
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(gmail_address, password)
-    server.sendmail(gmail_address, gmail_address, text)
-    server.quit()
-    
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(gmail_address, password)
+        server.sendmail(gmail_address, gmail_address, text)
+        server.quit()
+    except:
+        print('błąd wysyłania')
 
 def send_email_alert_new(link):
-    
-    subject = f'POJAWIŁ SIĘ NOWY PRODUKT! (BOT ALERT)'
-    
-    msg = MIMEMultipart()
-    msg['From'] = gmail_address
-    msg['To'] = gmail_address
-    msg['Subject'] = subject
+    try:
+        subject = f'POJAWIŁ SIĘ NOWY PRODUKT! (BOT ALERT)'
+        
+        msg = MIMEMultipart()
+        msg['From'] = gmail_address
+        msg['To'] = gmail_address
+        msg['Subject'] = subject
 
-    body = f'link no nowego produktu: {link}'
-    msg.attach(MIMEText(body, 'plain'))
+        body = f'link no nowego produktu: {link}'
+        msg.attach(MIMEText(body, 'plain'))
 
-    part = MIMEBase('application', 'octet-stream')
+        part = MIMEBase('application', 'octet-stream')
 
-    text = msg.as_string()
+        text = msg.as_string()
 
 
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(gmail_address, password)
-    server.sendmail(gmail_address, gmail_address, text)
-    server.quit()
-
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(gmail_address, password)
+        server.sendmail(gmail_address, gmail_address, text)
+        server.quit()
+    except:
+        print('błąd wysyłania')
+        
 def petla():
     
     counter_loop = 0
@@ -117,7 +120,7 @@ def petla():
     product_table_start = []
     link_table_start = []
     status_loop = True
-  
+    
     
     while status_loop:
         
@@ -125,10 +128,10 @@ def petla():
         aktualna = time.strftime("%H:%M:%S", godzina)
         if aktualna > '08:00:00' and aktualna < '08:00:30':
             send_email_alert(count_tablica)
-            time.sleep(31)
+            time.sleep(30)
         if aktualna > '20:00:00' and aktualna < '20:00:30':            
             send_email_alert(count_tablica)
-            time.sleep(31)
+            time.sleep(30)
         
         counter_loop +=1
         counter = 0
@@ -235,11 +238,7 @@ def petla():
             print(f'Ilość dostępnych produktów zmniejszyła się z {count_tablica_start} na {count_tablica} !')
             status_loop = False
             petla()
-            
-        
-        
-                   
-        
+                    
         for wartosc in range(count_tablica_start):
     
             try:
