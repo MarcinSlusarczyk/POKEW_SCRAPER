@@ -132,6 +132,15 @@ def petla():
         if aktualna > '20:00:00' and aktualna < '20:00:30':            
             send_email_alert(count_tablica)
             time.sleep(30)
+        if aktualna > '16:00:00' and aktualna < '16:00:30':            
+            send_email_alert(count_tablica)
+            time.sleep(30)
+        if aktualna > '18:00:00' and aktualna < '18:00:30':            
+            send_email_alert(count_tablica)
+            time.sleep(30)
+        if aktualna > '22:00:00' and aktualna < '22:00:30':            
+            send_email_alert(count_tablica)
+            time.sleep(30)
         
         counter_loop +=1
         counter = 0
@@ -198,26 +207,7 @@ def petla():
                 time.sleep(5)
                 status_loop = False
                 petla()
-            # except requests.exceptions.HTTPError as errh:
-            #     print ("Http Error:",errh)
-            #     counter = counter_max
-            #     time.sleep(5)
-            # except requests.exceptions.ConnectionError as errc:
-            #     print ("Error Connecting:",errc)
-            #     counter = counter_max
-            #     time.sleep(5)
-                
-            # except requests.exceptions.Timeout as errt:
-            #     print ("Timeout Error:",errt)
-            #     counter = counter_max
-            #     time.sleep(5)
-                
-            # except requests.exceptions.RequestException as err:
-            #     print ("OOps: Something Else",err)
-            #     counter = counter_max
-            #     time.sleep(5)
-                       
-        
+                                          
         counter_max = counter
 
         
@@ -253,10 +243,6 @@ def petla():
                         send_email(current_price, previous_price, current_product, current_link)
             except IndexError:
                 pass
-                # print("restart programu")
-                # status_loop = False
-                # petla()
-                # os.execl(sys.executable, sys.executable, *sys.argv)
             
                             
         counter_max = counter
