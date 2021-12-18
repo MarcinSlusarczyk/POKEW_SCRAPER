@@ -13,8 +13,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
-gmail_address = pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
-password = pg.password('wpisz hasło do swojego konta google', mask='*')
+print('uruchamiam program...')
+
+gmail_address = 'tu_Wpisz_swojego_Maila' #pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
+password = 'TU_HASLO' #pg.password('wpisz hasło do swojego konta google', mask='*')
 
 
 if gmail_address == "" and password == "":
@@ -204,9 +206,9 @@ def petla():
                     
             except:
                 print('Wystąpił problem z połączeniem...')
-                time.sleep(5)
                 status_loop = False
-                petla()
+                time.sleep(5)
+                os.execl(sys.executable, sys.executable, *sys.argv)
                                           
         counter_max = counter
 
