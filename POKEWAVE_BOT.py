@@ -2,7 +2,6 @@ import time
 import os
 import sys
 import datetime
-import tkinter
 import random
 import requests
 from bs4 import BeautifulSoup
@@ -15,8 +14,8 @@ from email import encoders
 
 print('uruchamiam program...')
 
-gmail_address = 'tu_Wpisz_swojego_Maila' #pg.prompt(text='wpisz swoj email na który ma przyjść powiadomienie')
-password = 'TU_HASLO' #pg.password('wpisz hasło do swojego konta google', mask='*')
+gmail_address = '' 
+password = ''
 
 
 if gmail_address == "" and password == "":
@@ -111,148 +110,142 @@ def send_email_alert_new(link):
     except:
         print('błąd wysyłania')
         
-def petla():
+
     
-    counter_loop = 0
-    counter_max = 0
-    tablica = []
-    tablica_start = []
-    product_table = []
-    link_table = []
-    product_table_start = []
-    link_table_start = []
-    status_loop = True
+counter_loop = 0
+counter_max = 0
+tablica = []
+tablica_start = []
+product_table = []
+link_table = []
+product_table_start = []
+link_table_start = []
+status_loop = True
+
+
+while status_loop:
     
+    godzina = time.localtime()
+    aktualna = time.strftime("%H:%M:%S", godzina)
+    if aktualna > '08:00:00' and aktualna < '08:00:30':
+        send_email_alert(count_tablica)
+        time.sleep(30)
+    if aktualna > '20:00:00' and aktualna < '20:00:30':            
+        send_email_alert(count_tablica)
+        time.sleep(30)
+    if aktualna > '16:00:00' and aktualna < '16:00:30':            
+        send_email_alert(count_tablica)
+        time.sleep(30)
+    if aktualna > '18:00:00' and aktualna < '18:00:30':            
+        send_email_alert(count_tablica)
+        time.sleep(30)
+    if aktualna > '22:00:00' and aktualna < '22:00:30':            
+        send_email_alert(count_tablica)
+        time.sleep(30)
     
-    while status_loop:
-        
-        godzina = time.localtime()
-        aktualna = time.strftime("%H:%M:%S", godzina)
-        if aktualna > '08:00:00' and aktualna < '08:00:30':
-            send_email_alert(count_tablica)
-            time.sleep(30)
-        if aktualna > '20:00:00' and aktualna < '20:00:30':            
-            send_email_alert(count_tablica)
-            time.sleep(30)
-        if aktualna > '16:00:00' and aktualna < '16:00:30':            
-            send_email_alert(count_tablica)
-            time.sleep(30)
-        if aktualna > '18:00:00' and aktualna < '18:00:30':            
-            send_email_alert(count_tablica)
-            time.sleep(30)
-        if aktualna > '22:00:00' and aktualna < '22:00:30':            
-            send_email_alert(count_tablica)
-            time.sleep(30)
-        
-        counter_loop +=1
-        counter = 0
-        main_site = 'https://pokewave.eu/produkty.html'    
+    counter_loop +=1
+    counter = 0
+    main_site = 'https://pokewave.eu/produkty.html'    
+    
+    try:
+        page = requests.get(main_site)
+        soup = BeautifulSoup(page.content, "html.parser")
+        index_page = soup.find(class_='IndexStron')
+        page_count = index_page.text[16].replace(' ', '')
+    except:
+        page_count = 6
+    
+    seq = 1
+
+    for seq in range(int(page_count)):
         
         try:
-            page = requests.get(main_site)
-            soup = BeautifulSoup(page.content, "html.parser")
-            index_page = soup.find(class_='IndexStron')
-            page_count = index_page.text[16].replace(' ', '')
-        except:
-            page_count = 6
-        
-        seq = 1
 
-        for seq in range(int(page_count)):
+            page = (f'{main_site}/s={str(int(seq+1))}')
+            page_request = requests.get(page)
+            soup = BeautifulSoup(page_request.content, "html.parser")
+
             
-            try:
-
-                page = (f'{main_site}/s={str(int(seq+1))}')
-                page_request = requests.get(page)
-                soup = BeautifulSoup(page_request.content, "html.parser")
-
+            for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
                 
-                for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
+                product_name = order.find('h3').text
+                product_link = order.find('a')['href']
+                product_status = order.find(class_='ListaOpisowa').text
+                product_cart = order.find(class_='DoKoszyka')
+                
+                try:                        
+                    product_price = order.find('span', class_='CenaPromocyjna').text                            
+                except:
+                    product_price = 0
+                                    
+                try:                       
+                    price = order.find(class_='Cena').text
+                except:
+                    price = 0
                     
-                    product_name = order.find('h3').text
-                    product_link = order.find('a')['href']
-                    product_status = order.find(class_='ListaOpisowa').text
-                    product_cart = order.find(class_='DoKoszyka')
+                if product_status.find('Dostępny') > 0  and product_cart != None:
                     
-                    try:                        
-                        product_price = order.find('span', class_='CenaPromocyjna').text                            
-                    except:
-                        product_price = 0
+                    if price == 0:                               
+                        product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
+                    else:
+                        product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))                      
+                        
+                    tablica.append(product_price_2)
+                    product_table.append(product_name)
+                    link_table.append(product_link)                        
+                    
+                    if counter_loop == 1:
+                        tablica_start.append(product_price_2)                                            
+                        product_table_start.append(product_name)
+                        link_table_start.append(product_link)
+                
+        except:
+            print('Wystąpił problem z połączeniem...')
+            time.sleep(5)
                                         
-                    try:                       
-                        price = order.find(class_='Cena').text
-                    except:
-                        price = 0
-                        
-                    if product_status.find('Dostępny') > 0  and product_cart != None:
-                        
-                        if price == 0:                               
-                            product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
-                        else:
-                            product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))
-                        
-                        
-                            
-                        tablica.append(product_price_2)
-                        product_table.append(product_name)
-                        link_table.append(product_link)
-                        
-                        
-                        
-                        if counter_loop == 1:
-                            tablica_start.append(product_price_2)                                            
-                            product_table_start.append(product_name)
-                            link_table_start.append(product_link)
-                    
-            except:
-                print('Wystąpił problem z połączeniem...')
-                status_loop = False
-                time.sleep(5)
-                os.execl(sys.executable, sys.executable, *sys.argv)
-                                          
-        counter_max = counter
-
-        
-        count_tablica = len(tablica)       
-        count_tablica_start = len(tablica_start)
-        
-        if count_tablica_start  > 0: 
-            if count_tablica > count_tablica_start:
-                for link in link_table:
-                    if link not in link_table_start:
-                        print(f"wysyłam powiadomienie dla nowego produktu, link: {link}")
-                        send_email_alert_new(link)
-                        status_loop = False
-                        petla()
-        
-        if count_tablica < count_tablica_start:
-            print(count_tablica, count_tablica_start)
-            print(f'Ilość dostępnych produktów zmniejszyła się z {count_tablica_start} na {count_tablica} !')
-            status_loop = False
-            petla()
-                    
-        for wartosc in range(count_tablica_start):
+    counter_max = counter
     
-            try:
-                current_price = tablica[wartosc]
-                current_product = product_table[wartosc]
-                current_link = link_table[wartosc]
-                previous_price = tablica_start[wartosc]
+    count_tablica = len(tablica)       
+    count_tablica_start = len(tablica_start)
+    
+    if count_tablica_start > 0: 
+        if count_tablica > count_tablica_start:
+            for link in link_table:
+                if link not in link_table_start:
+                    print(f"wysyłam powiadomienie dla nowego produktu, link: {link}")
+                    send_email_alert_new(link)
+                    tablica_start = tablica
+                    product_table_start = product_table
+                    link_table_start = link_table
+                    
+    
+    if count_tablica < count_tablica_start:
+        print(f'Ilość dostępnych produktów zmniejszyła się z {count_tablica_start} na {count_tablica} !')
+        counter_loop = 0
+        tablica_start.clear()
+        product_table_start.clear()
+        link_table_start.clear()
+        
+    for wartosc in range(count_tablica_start):
 
-                if current_price > previous_price:
-                    counter += 1            
-                    if counter > counter_max:
-                        send_email(current_price, previous_price, current_product, current_link)
-            except IndexError:
-                pass
-            
-                            
-        counter_max = counter
-        czas = datetime.datetime.now() - begin_time
-        print(f'działa już: {czas} -- ilość dostępnych produktów: {count_tablica} --- godzina: {aktualna}')
-        time.sleep(6)
-        tablica.clear()
-        product_table.clear()
-        link_table.clear()
+        try:
+            current_price = tablica[wartosc]
+            current_product = product_table[wartosc]
+            current_link = link_table[wartosc]
+            previous_price = tablica_start[wartosc]
 
-petla()
+            if current_price > previous_price:
+                counter += 1            
+                if counter > counter_max:
+                    send_email(current_price, previous_price, current_product, current_link)
+        except IndexError:
+            pass
+        
+                        
+    counter_max = counter
+    czas = datetime.datetime.now() - begin_time
+    print(f'działa już: {czas} -- ilość dostępnych produktów: {count_tablica} --- godzina: {aktualna}')
+    time.sleep(6)
+    tablica.clear()
+    product_table.clear()
+    link_table.clear()
