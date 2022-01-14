@@ -1,8 +1,5 @@
 import time
-import os
-import sys
 import datetime
-import random
 import requests
 from bs4 import BeautifulSoup
 from pushbullet import Pushbullet
@@ -10,7 +7,7 @@ from pushbullet import Pushbullet
 
 print('uruchamiam program...')
 
-token = 'tutajwklejtoken'
+token = 'o.qOgEBkxanJbLbKPAvKs2BZUa2TZAcSoM'
 pb = Pushbullet(token)
 
 
@@ -18,8 +15,6 @@ begin_time = datetime.datetime.now()
 product_name = ""
 counter_loop = 0
 counter_max = 0
-wartosc = 0
-zmiana = 0
 tablica = []
 tablica_start = []
 product_table = []
