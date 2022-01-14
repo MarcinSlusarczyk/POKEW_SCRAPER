@@ -7,7 +7,7 @@ from pushbullet import Pushbullet
 
 print('uruchamiam program...')
 
-token = 'o.qOgEBkxanJbLbKPAvKs2BZUa2TZAcSoM'
+token = 'o.qOgEBk2TZAcSoM'
 pb = Pushbullet(token)
 
 
@@ -91,61 +91,58 @@ while status_loop:
         page_count = 6
     
     seq = 1
-
-    for seq in range(int(page_count)):
-        
-        try:
-
-            page = (f'{main_site}/s={str(int(seq+1))}')
-            page_request = requests.get(page)
-            soup = BeautifulSoup(page_request.content, "html.parser")
-
+    try:
+        for seq in range(int(page_count)):
             
-            for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
+                page = (f'{main_site}/s={str(int(seq+1))}')
+                page_request = requests.get(page)
+                soup = BeautifulSoup(page_request.content, "html.parser")
+
                 
-                product_name = order.find('h3').text
-                product_link = order.find('a')['href']
-                product_status = order.find(class_='ListaOpisowa').text
-                product_cart = order.find(class_='DoKoszyka')
-                
-                try:                        
-                    product_price = order.find('span', class_='CenaPromocyjna').text                            
-                except:
-                    product_price = 0
+                for index, order in enumerate(soup.find_all(class_='Okno OknoRwd')):
+                    
+                    product_name = order.find('h3').text
+                    product_link = order.find('a')['href']
+                    product_status = order.find(class_='ListaOpisowa').text
+                    product_cart = order.find(class_='DoKoszyka')
+                    
+                    try:                        
+                        product_price = order.find('span', class_='CenaPromocyjna').text                            
+                    except:
+                        product_price = 0
+                                        
+                    try:                       
+                        price = order.find(class_='Cena').text
+                    except:
+                        price = 0
+                        
+                    if product_status.find('Dostępny') > 0  and product_cart != None:
+                        
+                        if price == 0:                               
+                            product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
+                        else:
+                            product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0])) 
+                        
+                        tablica_check[product_link] = product_name, product_price_2                      
                                     
-                try:                       
-                    price = order.find(class_='Cena').text
-                except:
-                    price = 0
-                    
-                if product_status.find('Dostępny') > 0  and product_cart != None:
-                    
-                    if price == 0:                               
-                        product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
-                    else:
-                        product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0])) 
-                    
-                    tablica_check[product_link] = product_name, product_price_2                      
-                                  
-                    if product_link not in tablica:
-                        tablica[product_link]= product_name, product_price_2
-                        print(f'Wysyłam powiadomienie dla - {product_link}')
-                        send_email_alert_new(product_link, product_name, product_price_2) 
-                    
-                                          
-                                                                           
-        except Exception as Err:
-            print(f'Wystąpił problem z połączeniem... powód: {Err}')
-            time.sleep(5)
-    
-    if tablica_check != tablica:
-        try:
-            for key in tablica:
-                if key not in tablica_check:
-                    tablica.pop(key, None)
-        except RuntimeError:
-            pass
+                        if product_link not in tablica:
+                            tablica[product_link]= product_name, product_price_2
+                            print(f'Wysyłam powiadomienie dla - {product_link}')
+                            send_email_alert_new(product_link, product_name, product_price_2) 
+                                    
         
+        if tablica_check != tablica:
+            try:
+                for key in tablica:
+                    if key not in tablica_check:
+                        tablica.pop(key, None)
+            except RuntimeError:
+                pass
+    
+    except:
+        print(f'Wystąpił problem z połączeniem...')
+        time.sleep(5)
+               
     count_tablica = len(tablica)                                   
     counter_max = counter
     czas = datetime.datetime.now() - begin_time
