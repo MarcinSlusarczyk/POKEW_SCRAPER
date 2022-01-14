@@ -5,22 +5,14 @@ import datetime
 import random
 import requests
 from bs4 import BeautifulSoup
-import pymsgbox as pg
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
+from pushbullet import Pushbullet
+
 
 print('uruchamiam program...')
 
-gmail_address = '' 
-password = ''
+token = 'tutajwklejtoken'
+pb = Pushbullet(token)
 
-
-if gmail_address == "" and password == "":
-    pg.alert('BRAK INFORMACJI! - URUCHOM PROGRAM OD NOWA I UZUPEŁNIJ ODPOWIEDNIO WSZYSTKIE POLA', 'UZUPEŁNIJ INFORMACJE!')
-    sys.exit()
 
 begin_time = datetime.datetime.now()
 product_name = ""
@@ -37,85 +29,33 @@ link_table_start = []
 
 def send_email(current_price, previous_price, current_product, current_link):
     try:
-        subject = f'BOT ALERT (PokeWave.eu) - {current_product}'
-        
-        msg = MIMEMultipart()
-        msg['From'] = gmail_address
-        msg['To'] = gmail_address
-        msg['Subject'] = subject
-
+        subject = f'BOT ALERT (PokeWave.eu) - {current_product}'     
         body = f'Cena spadła z {previous_price} zł na {current_price} !!!! -- link do produktu: {current_link}'
-        msg.attach(MIMEText(body, 'plain'))
-
-        part = MIMEBase('application', 'octet-stream')
-
-        text = msg.as_string()
-
-
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(gmail_address, password)
-        server.sendmail(gmail_address, gmail_address, text)
-        server.quit()
+        pb.push_link(subject, body)
+    
     except:
         print('błąd wysyłania')
         
 def send_email_alert(count_tablica):
     try:
-        subject = f'PROGRAM 2 - WSZYSTKO DZIAŁA! (BOT ALERT)'
-        
-        msg = MIMEMultipart()
-        msg['From'] = gmail_address
-        msg['To'] = gmail_address
-        msg['Subject'] = subject
-
+        subject = f'PROGRAM 2 - WSZYSTKO DZIAŁA! (BOT ALERT)'            
         body = f'Dostępnych produktów na stronie jest: {count_tablica}'
-        msg.attach(MIMEText(body, 'plain'))
-
-        part = MIMEBase('application', 'octet-stream')
-
-        text = msg.as_string()
-
-
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(gmail_address, password)
-        server.sendmail(gmail_address, gmail_address, text)
-        server.quit()
+        pb.push_link(subject, body)
     except:
         print('błąd wysyłania')
 
-def send_email_alert_new(link):
+def send_email_alert_new(product_link, product_name, product_price_2):
     try:
-        subject = f'POJAWIŁ SIĘ NOWY PRODUKT! (BOT ALERT)'
-        
-        msg = MIMEMultipart()
-        msg['From'] = gmail_address
-        msg['To'] = gmail_address
-        msg['Subject'] = subject
-
-        body = f'link no nowego produktu: {link}'
-        msg.attach(MIMEText(body, 'plain'))
-
-        part = MIMEBase('application', 'octet-stream')
-
-        text = msg.as_string()
-
-
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(gmail_address, password)
-        server.sendmail(gmail_address, gmail_address, text)
-        server.quit()
+        subject = f'POJAWIŁ SIĘ NOWY PRODUKT! - {product_name} -- cena: {product_price_2}'       
+        body = product_link
+        pb.push_link(subject, body)
     except:
         print('błąd wysyłania')
-        
-
-    
+            
 counter_loop = 0
 counter_max = 0
-tablica = []
-tablica_start = []
+tablica = {}
+tablica_check = {}
 product_table = []
 link_table = []
 product_table_start = []
@@ -188,64 +128,32 @@ while status_loop:
                     if price == 0:                               
                         product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
                     else:
-                        product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))                      
-                        
-                    tablica.append(product_price_2)
-                    product_table.append(product_name)
-                    link_table.append(product_link)                        
+                        product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0])) 
                     
-                    if counter_loop == 1:
-                        tablica_start.append(product_price_2)                                            
-                        product_table_start.append(product_name)
-                        link_table_start.append(product_link)
-                
-        except:
-            print('Wystąpił problem z połączeniem...')
+                    tablica_check[product_link] = product_name, product_price_2                      
+                                  
+                    if product_link not in tablica:
+                        tablica[product_link]= product_name, product_price_2
+                        print(f'Wysyłam powiadomienie dla - {product_link}')
+                        send_email_alert_new(product_link, product_name, product_price_2) 
+                    
+                                          
+                                                                           
+        except Exception as Err:
+            print(f'Wystąpił problem z połączeniem... powód: {Err}')
             time.sleep(5)
-                                        
-    counter_max = counter
     
-    count_tablica = len(tablica)       
-    count_tablica_start = len(tablica_start)
-    
-    if count_tablica_start > 0: 
-        if count_tablica > count_tablica_start:
-            for link in link_table:
-                if link not in link_table_start:
-                    print(f"wysyłam powiadomienie dla nowego produktu, link: {link}")
-                    send_email_alert_new(link)
-                    tablica_start = tablica
-                    product_table_start = product_table
-                    link_table_start = link_table
-                    
-    
-    if count_tablica < count_tablica_start:
-        print(f'Ilość dostępnych produktów zmniejszyła się z {count_tablica_start} na {count_tablica} !')
-        counter_loop = 0
-        tablica_start.clear()
-        product_table_start.clear()
-        link_table_start.clear()
-        
-    for wartosc in range(count_tablica_start):
-
+    if tablica_check != tablica:
         try:
-            current_price = tablica[wartosc]
-            current_product = product_table[wartosc]
-            current_link = link_table[wartosc]
-            previous_price = tablica_start[wartosc]
-
-            if current_price > previous_price:
-                counter += 1            
-                if counter > counter_max:
-                    send_email(current_price, previous_price, current_product, current_link)
-        except IndexError:
+            for key in tablica:
+                if key not in tablica_check:
+                    tablica.pop(key, None)
+        except RuntimeError:
             pass
         
-                        
+    count_tablica = len(tablica)                                   
     counter_max = counter
     czas = datetime.datetime.now() - begin_time
-    print(f'działa już: {czas} -- ilość dostępnych produktów: {count_tablica} --- godzina: {aktualna}')
+    print(f'działa już: {czas} -- ilość dostępnych produktów: {len(tablica)} --- godzina: {aktualna}')
+    tablica_check.clear()
     time.sleep(6)
-    tablica.clear()
-    product_table.clear()
-    link_table.clear()
