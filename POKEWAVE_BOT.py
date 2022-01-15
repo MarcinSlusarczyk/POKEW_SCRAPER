@@ -3,24 +3,19 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 from pushbullet import Pushbullet
+import schedule
 
 
-print('uruchamiam program...')
-
-token = 'o.qOgEBk2TZAcSoM'
+token = 'o.qOgEBkxanJbLbKPAvKs2BZUa2TZAcSoM'
 pb = Pushbullet(token)
 
 
 begin_time = datetime.datetime.now()
 product_name = ""
-counter_loop = 0
-counter_max = 0
 tablica = []
-tablica_start = []
 product_table = []
 link_table = []
-product_table_start = []
-link_table_start = []
+
 
 def send_email(current_price, previous_price, current_product, current_link):
     try:
@@ -33,9 +28,9 @@ def send_email(current_price, previous_price, current_product, current_link):
         
 def send_email_alert(count_tablica):
     try:
-        subject = f'PROGRAM 2 - WSZYSTKO DZIAŁA! (BOT ALERT)'            
+        subject = f'BOT POKEWAVE - WSZYSTKO DZIAŁA!'            
         body = f'Dostępnych produktów na stronie jest: {count_tablica}'
-        pb.push_link(subject, body)
+        pb.push_note(subject, body)
     except:
         print('błąd wysyłania')
 
@@ -43,23 +38,17 @@ def send_email_alert_new(product_link, product_name, product_price_2):
     try:
         subject = f'POJAWIŁ SIĘ NOWY PRODUKT! - {product_name} -- cena: {product_price_2}'       
         body = product_link
-        pb.push_link(subject, body)
+        # pb.push_link(subject, body)
     except:
         print('błąd wysyłania')
             
-counter_loop = 0
-counter_max = 0
 tablica = {}
 tablica_check = {}
 product_table = []
 link_table = []
-product_table_start = []
-link_table_start = []
-status_loop = True
 
 
-while status_loop:
-    
+def main():
     godzina = time.localtime()
     aktualna = time.strftime("%H:%M:%S", godzina)
     if aktualna > '08:00:00' and aktualna < '08:00:30':
@@ -78,8 +67,8 @@ while status_loop:
         send_email_alert(count_tablica)
         time.sleep(30)
     
-    counter_loop +=1
-    counter = 0
+ 
+   
     main_site = 'https://pokewave.eu/produkty.html'    
     
     try:
@@ -142,10 +131,15 @@ while status_loop:
     except:
         print(f'Wystąpił problem z połączeniem...')
         time.sleep(5)
-               
+            
     count_tablica = len(tablica)                                   
-    counter_max = counter
     czas = datetime.datetime.now() - begin_time
     print(f'działa już: {czas} -- ilość dostępnych produktów: {len(tablica)} --- godzina: {aktualna}')
     tablica_check.clear()
-    time.sleep(6)
+
+
+schedule.every(10).seconds.do(main)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
