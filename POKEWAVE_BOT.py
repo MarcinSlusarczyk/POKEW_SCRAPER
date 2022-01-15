@@ -38,7 +38,7 @@ def send_email_alert_new(product_link, product_name, product_price_2):
     try:
         subject = f'POJAWIŁ SIĘ NOWY PRODUKT! - {product_name} -- cena: {product_price_2}'       
         body = product_link
-        # pb.push_link(subject, body)
+        pb.push_link(subject, body)
     except:
         print('błąd wysyłania')
             
