@@ -6,7 +6,7 @@ from pushbullet import Pushbullet
 import schedule
 
 
-token = 'o.qOgEBkxanJbLbKPAvKs2BZUa2TZAcSoM'
+token = 'yourtoken'
 pb = Pushbullet(token)
 
 
