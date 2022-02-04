@@ -6,16 +6,13 @@ from pushbullet import Pushbullet
 import schedule
 
 
-token = 'yourtoken'
+token = 'o.f88KubNpQNietnPN8EWspWlnZa5zFs3M'
 pb = Pushbullet(token)
 
 
 begin_time = datetime.datetime.now()
 product_name = ""
-tablica = []
-product_table = []
-link_table = []
-
+slownik = {}
 
 def send_email(current_price, previous_price, current_product, current_link):
     try:
@@ -26,10 +23,10 @@ def send_email(current_price, previous_price, current_product, current_link):
     except:
         print('błąd wysyłania')
         
-def send_email_alert(count_tablica):
+def send_email_alert(counter):
     try:
         subject = f'BOT POKEWAVE - WSZYSTKO DZIAŁA!'            
-        body = f'Dostępnych produktów na stronie jest: {count_tablica}'
+        body = f'Dostępnych produktów na stronie jest: {counter}'
         pb.push_note(subject, body)
     except:
         print('błąd wysyłania')
@@ -42,32 +39,9 @@ def send_email_alert_new(product_link, product_name, product_price_2):
     except:
         print('błąd wysyłania')
             
-tablica = {}
-tablica_check = {}
-product_table = []
-link_table = []
 
 
 def main():
-    godzina = time.localtime()
-    aktualna = time.strftime("%H:%M:%S", godzina)
-    if aktualna > '08:00:00' and aktualna < '08:00:30':
-        send_email_alert(count_tablica)
-        time.sleep(30)
-    if aktualna > '20:00:00' and aktualna < '20:00:30':            
-        send_email_alert(count_tablica)
-        time.sleep(30)
-    if aktualna > '16:00:00' and aktualna < '16:00:30':            
-        send_email_alert(count_tablica)
-        time.sleep(30)
-    if aktualna > '18:00:00' and aktualna < '18:00:30':            
-        send_email_alert(count_tablica)
-        time.sleep(30)
-    if aktualna > '22:00:00' and aktualna < '22:00:30':            
-        send_email_alert(count_tablica)
-        time.sleep(30)
-    
- 
    
     main_site = 'https://pokewave.eu/produkty.html'    
     
@@ -110,34 +84,60 @@ def main():
                         if price == 0:                               
                             product_price_2 = int(float(product_price.replace(' ', '').replace(',', '.').split('zł')[1]))
                         else:
-                            product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0])) 
+                            product_price_2 =int(float(price.replace(' ', '').replace(',', '.').split('zł')[0]))                            
                         
-                        tablica_check[product_link] = product_name, product_price_2                      
-                                    
-                        if product_link not in tablica:
-                            tablica[product_link]= product_name, product_price_2
-                            print(f'Wysyłam powiadomienie dla - {product_link}')
-                            send_email_alert_new(product_link, product_name, product_price_2) 
-                                    
+                        
+                        slownik[product_name] = product_link, product_price_2                                                                                 
+                                                         
+                        with open('produkty_pokew.csv', 'a+', encoding='UTF8') as file:                                                      
+                            file.seek(0)                                         
+                            if product_name not in file.read():                            
+                                file.write(f'{product_name.strip()}; {product_link.strip()}; {product_price_2}\n')
+                                send_email_alert_new(product_link, product_name, product_price_2)
+                                print("wysyłam")
+                        
+              
+                                
+
+    except Exception as err:
+        print(f'Wystąpił problem z połączeniem...{err}')
+        time.sleep(5)
+    
+    try:
+        file_read = open('produkty_pokew.csv', 'r', encoding='UTF8')
+        counter = 0
         
-        if tablica_check != tablica:
-            try:
-                for key in tablica:
-                    if key not in tablica_check:
-                        tablica.pop(key, None)
-            except RuntimeError:
-                pass
+        for w in file_read.readlines(): counter += 1
+        
+        if len(slownik) < counter and len(slownik) > 0:
+            file_write = open('produkty_pokew.csv', 'w+', encoding='UTF8')                
+            for element in slownik.items():                            
+                file_write.write(f'{element[0].strip()}; {element[1][0].strip()}; {element[1][1]}\n')      
+            file_write.close()
+        file_read.close()
+        
     
     except:
-        print(f'Wystąpił problem z połączeniem...')
-        time.sleep(5)
-            
-    count_tablica = len(tablica)                                   
+        print(f"Błąd w zawartości pliku! - zaczytuje plik na nowo..")
+        file_write = open('produkty_pokew.csv', 'w+', encoding='UTF8')
+        for element in slownik.items():                            
+            file_write.write(f'{element[0].strip()}; {element[1][0].strip()}; {element[1][1]}\n')
+        file_write.close()
+        
+    godzina = time.localtime()
+    aktualna = time.strftime("%H:%M:%S", godzina)
+    if aktualna > '08:00:00' and aktualna < '08:00:30':
+        send_email_alert(counter)
+        time.sleep(30)
+  
+    if aktualna > '22:00:00' and aktualna < '22:00:30':            
+        send_email_alert(counter)
+        time.sleep(30)    
     czas = datetime.datetime.now() - begin_time
-    print(f'działa już: {czas} -- ilość dostępnych produktów: {len(tablica)} --- godzina: {aktualna}')
-    tablica_check.clear()
-
-
+    print(f'działa już: {czas} -- ilość dostępnych produktów: {counter}   --- godzina: {aktualna}')
+    
+    slownik.clear()
+    
 schedule.every(10).seconds.do(main)
 
 while True:
