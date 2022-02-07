@@ -6,7 +6,7 @@ from pushbullet import Pushbullet
 import schedule
 
 
-token = 'o.f88KubNpQNietnPN8EWspWlnZa5zFs3M'
+token = 'o.f88KubNpQNietnPN8nZa5zFs3M'
 pb = Pushbullet(token)
 
 
@@ -39,7 +39,6 @@ def send_email_alert_new(product_link, product_name, product_price_2):
     except:
         print('błąd wysyłania')
             
-
 
 def main():
    
@@ -88,51 +87,46 @@ def main():
                         
                         
                         slownik[product_name] = product_link, product_price_2                                                                                 
-                                                         
+                        
+                                                     
                         with open('produkty_pokew.csv', 'a+', encoding='UTF8') as file:                                                      
-                            file.seek(0)                                         
+                            file.seek(0)                                       
                             if product_name not in file.read():                            
                                 file.write(f'{product_name.strip()}; {product_link.strip()}; {product_price_2}\n')
-                                send_email_alert_new(product_link, product_name, product_price_2)
+                                # send_email_alert_new(product_link, product_name, product_price_2)
                                 print("wysyłam")
-                        
-              
+        
+        with open('produkty_pokew.csv', 'a+', encoding='UTF8') as file:                                                               
+            file.seek(0)
+            if len(slownik) < len(file.readlines()):
+                file.truncate()                               
+                for element in slownik.items():                            
+                    file.write(f'{element[0].strip()}; {element[1][0].strip()}; {element[1][1]}\n')
                                 
-
-    except Exception as err:
-        print(f'Wystąpił problem z połączeniem...{err}')
+                                
+    except:
+        print(f'Wystąpił problem z połączeniem...')
         time.sleep(5)
     
-    try:
-        file_read = open('produkty_pokew.csv', 'r', encoding='UTF8')
-        counter = 0
-        
-        for w in file_read.readlines(): counter += 1
-        
-        if len(slownik) < counter and len(slownik) > 0:
-            file_write = open('produkty_pokew.csv', 'w+', encoding='UTF8')                
-            for element in slownik.items():                            
-                file_write.write(f'{element[0].strip()}; {element[1][0].strip()}; {element[1][1]}\n')      
-            file_write.close()
-        file_read.close()
-        
-    
-    except:
-        print(f"Błąd w zawartości pliku! - zaczytuje plik na nowo..")
-        file_write = open('produkty_pokew.csv', 'w+', encoding='UTF8')
-        for element in slownik.items():                            
-            file_write.write(f'{element[0].strip()}; {element[1][0].strip()}; {element[1][1]}\n')
-        file_write.close()
-        
+    counter = len(slownik)   
     godzina = time.localtime()
     aktualna = time.strftime("%H:%M:%S", godzina)
     if aktualna > '08:00:00' and aktualna < '08:00:30':
         send_email_alert(counter)
         time.sleep(30)
-  
+    if aktualna > '20:00:00' and aktualna < '20:00:30':            
+        send_email_alert(counter)
+        time.sleep(30)
+    if aktualna > '16:00:00' and aktualna < '16:00:30':            
+        send_email_alert(counter)
+        time.sleep(30)
+    if aktualna > '18:00:00' and aktualna < '18:00:30':            
+        send_email_alert(counter)
+        time.sleep(30)
     if aktualna > '22:00:00' and aktualna < '22:00:30':            
         send_email_alert(counter)
-        time.sleep(30)    
+        time.sleep(30)
+          
     czas = datetime.datetime.now() - begin_time
     print(f'działa już: {czas} -- ilość dostępnych produktów: {counter}   --- godzina: {aktualna}')
     
